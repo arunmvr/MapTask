@@ -1,6 +1,7 @@
 package com.example.arun.maptask;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -11,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -31,7 +33,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MapActivity extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener, OnMapReadyCallback  {
     private GoogleApiClient mGoogleApiClient;
-    private LocationManager locationManager;
+    private LocationManager mLocationManager;
     private LocationRequest mLocationRequest;
     private Location mLocation;
     private LatLng latLng;
@@ -181,9 +183,9 @@ public class MapActivity extends FragmentActivity implements GoogleApiClient.Con
     }
 
     public void CheckIfGpsIsEnabled(){
-        LocationManager mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if ( !mLocationManager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
-            Toast.makeText(getApplicationContext(), "Please Enable Location Services", Toast.LENGTH_SHORT).show();
+            buildAlertMessageNoGps();
         }else if (!mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
             Toast.makeText(getApplicationContext(), "Please Enable Network Services", Toast.LENGTH_SHORT).show();
 
@@ -210,6 +212,30 @@ public class MapActivity extends FragmentActivity implements GoogleApiClient.Con
         mGooglemap.moveCamera(CameraUpdateFactory.newLatLng(mChennai));
         mGooglemap.animateCamera(CameraUpdateFactory.zoomTo(15));
 
+    }
+
+    public void buildAlertMessageNoGps() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder
+                .setMessage(
+                        "GPS is disabled in your device. Would you like to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                Intent callGPSSettingIntent = new Intent(
+                                        android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                startActivity(callGPSSettingIntent);
+                            }
+                        });
+        alertDialogBuilder.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.show();
     }
 
 
