@@ -232,6 +232,9 @@ public class MapActivity extends FragmentActivity implements GoogleApiClient.Con
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
+                        Toast.makeText(getApplicationContext(),
+                                "Unable to display current Location. Please enable Location Services",
+                                Toast.LENGTH_LONG).show();
                     }
                 });
         AlertDialog alert = alertDialogBuilder.create();
