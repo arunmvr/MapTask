@@ -84,25 +84,7 @@ public class MapActivity extends FragmentActivity implements GoogleApiClient.Con
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            /* TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.*/
-            return;
-        }
-        mLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
-        if (mLocation != null) {
-            double latitude = mLocation.getLatitude();
-            double longitude = mLocation.getLongitude();
-            latLng = new LatLng(latitude, longitude);
-            mGooglemap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-            mGooglemap.animateCamera(CameraUpdateFactory.zoomTo(15));
-        }
+        ZoomIn();
     }
 
     @Override
@@ -118,28 +100,18 @@ public class MapActivity extends FragmentActivity implements GoogleApiClient.Con
 
     @Override
     public void onLocationChanged(Location location) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        mLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
-        if (mLocation != null) {
-            double latitude = mLocation.getLatitude();
-            double longitude = mLocation.getLongitude();
-            latLng = new LatLng(latitude, longitude);
-            mGooglemap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-            mGooglemap.animateCamera(CameraUpdateFactory.zoomTo(15));
-        }
+        ZoomIn();
     }
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
+        ZoomIn();
 
     }
 
     @Override
     public void onProviderEnabled(String provider) {
-
+        ZoomIn();
     }
 
     @Override
@@ -211,6 +183,22 @@ public class MapActivity extends FragmentActivity implements GoogleApiClient.Con
                 .title("Chennai"));
         mGooglemap.moveCamera(CameraUpdateFactory.newLatLng(mChennai));
         mGooglemap.animateCamera(CameraUpdateFactory.zoomTo(15));
+
+    }
+
+    public void ZoomIn(){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        mLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        if (mLocation != null) {
+            double latitude = mLocation.getLatitude();
+            double longitude = mLocation.getLongitude();
+            latLng = new LatLng(latitude, longitude);
+            mGooglemap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+            mGooglemap.animateCamera(CameraUpdateFactory.zoomTo(15));
+        }
 
     }
 
