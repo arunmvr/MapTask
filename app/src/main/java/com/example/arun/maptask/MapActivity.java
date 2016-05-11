@@ -3,6 +3,7 @@ package com.example.arun.maptask;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -17,8 +18,15 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStates;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -64,8 +72,9 @@ public class MapActivity extends FragmentActivity implements GoogleApiClient.Con
         Intent intent = this.getIntent();
         choice = intent.getIntExtra("Choice", 0);
         if(choice==0){
-            CheckIfGpsIsEnabled();
+            //CheckIfGpsIsEnabled();
             ShowCurrentLocation();
+            ZoomIn();
         }else if(choice==1){
             ShowBangalore();
         }else if(choice==2){
@@ -134,6 +143,7 @@ public class MapActivity extends FragmentActivity implements GoogleApiClient.Con
 
         if (mGoogleApiClient != null) {
             mGoogleApiClient.connect();
+            ZoomIn();
         }
     }
 
@@ -143,16 +153,55 @@ public class MapActivity extends FragmentActivity implements GoogleApiClient.Con
         }
         mGooglemap.setMyLocationEnabled(true);
         mGooglemap.getUiSettings().setZoomControlsEnabled(true);
+        buildGoogleApiClient();
+
 
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(3000);
-        mLocationRequest.setFastestInterval(500);
+        mLocationRequest.setInterval(0);
+        mLocationRequest.setFastestInterval(0);
 
-        buildGoogleApiClient();
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+
+        builder.setAlwaysShow(true);
+
+        PendingResult<LocationSettingsResult> result =
+                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+            @Override
+            public void onResult(LocationSettingsResult result) {
+                final Status status = result.getStatus();
+                final LocationSettingsStates state = result.getLocationSettingsStates();
+                switch (status.getStatusCode()) {
+                    case LocationSettingsStatusCodes.SUCCESS:
+                        // All location settings are satisfied. The client can initialize location
+                        // requests here.
+                        break;
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        // Location settings are not satisfied. But could be fixed by showing the user
+                        // a dialog.
+                        try {
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            status.startResolutionForResult(
+                                    MapActivity.this, 1000);
+                        } catch (IntentSender.SendIntentException e) {
+                            // Ignore the error.
+                        }
+                        break;
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        // Location settings are not satisfied. However, we have no way to fix the
+                        // settings so we won't show the dialog.
+                        break;
+                }
+            }
+        });
         mGoogleApiClient.connect();
-
     }
+
+
 
     public void CheckIfGpsIsEnabled(){
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
